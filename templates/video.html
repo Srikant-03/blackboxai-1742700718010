@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Video Analysis</h1>
+        <p class="text-gray-600">Analyze videos for authenticity and potential modifications</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <form id="videoForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Upload Video</label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                    <div class="space-y-1 text-center">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-video text-gray-400 text-3xl mb-3"></i>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="video" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                    <span>Upload a file</span>
+                                    <input id="video" name="video" type="file" class="sr-only" accept="video/*">
+                                </label>
+                                <p class="pl-1">or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">MP4, MOV, AVI up to 50MB</p>
+                        </div>
+                        <video id="preview" class="mt-4 mx-auto max-h-64 hidden" controls></video>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center">
+                <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <i class="fas fa-search mr-2"></i>
+                    Analyze Video
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div id="results" class="mt-8 hidden">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Analysis Results</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Classification Result -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Classification</h3>
+                    <p id="classification" class="text-xl font-bold"></p>
+                </div>
+                
+                <!-- Confidence Score -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Confidence Score</h3>
+                    <div class="flex items-center">
+                        <div class="flex-1 bg-gray-200 rounded-full h-4">
+                            <div id="confidenceBar" class="bg-indigo-600 rounded-full h-4" style="width: 0%"></div>
+                        </div>
+                        <span id="confidenceScore" class="ml-3 text-lg font-semibold"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Metadata -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Video Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Duration</p>
+                        <p id="duration" class="text-lg font-semibold"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Dimensions</p>
+                        <p id="dimensions" class="text-lg font-semibold"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">FPS</p>
+                        <p id="fps" class="text-lg font-semibold"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Details -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Analysis Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Frames Analyzed</p>
+                        <p id="framesAnalyzed" class="text-lg font-semibold"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Average Faces per Frame</p>
+                        <p id="avgFaces" class="text-lg font-semibold"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Score Stability</p>
+                        <p id="scoreStability" class="text-lg font-semibold"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Frame Analysis -->
+            <div class="bg-gray-50 rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Frame Analysis</h3>
+                <div id="frameAnalysis" class="space-y-4">
+                    <!-- Frame analysis details will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Preview video before upload
+document.getElementById('video').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const preview = document.getElementById('preview');
+        preview.src = URL.createObjectURL(file);
+        preview.classList.remove('hidden');
+    }
+});
+
+// Handle form submission
+document.getElementById('videoForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const videoFile = document.getElementById('video').files[0];
+    if (!videoFile) {
+        alert('Please select a video to analyze');
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('video', videoFile);
+
+        const response = await fetch('/analyze/video', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        
+        if (result.error) {
+            throw new Error(result.error);
+        }
+
+        // Update results
+        document.getElementById('classification').textContent = result.classification;
+        document.getElementById('classification').className = 
+            result.classification === 'Likely Authentic' 
+                ? 'text-xl font-bold text-green-600' 
+                : 'text-xl font-bold text-red-600';
+
+        document.getElementById('confidenceBar').style.width = `${result.confidence}%`;
+        document.getElementById('confidenceScore').textContent = `${result.confidence.toFixed(1)}%`;
+
+        // Update metadata
+        document.getElementById('duration').textContent = result.metadata.duration + 's';
+        document.getElementById('dimensions').textContent = result.metadata.dimensions;
+        document.getElementById('fps').textContent = result.metadata.fps.toFixed(1);
+        document.getElementById('framesAnalyzed').textContent = result.metadata.frames_analyzed;
+        document.getElementById('avgFaces').textContent = result.metadata.average_faces_per_frame.toFixed(2);
+        document.getElementById('scoreStability').textContent = (result.metadata.score_stability * 100).toFixed(1) + '%';
+
+        // Update frame analysis
+        const frameAnalysis = document.getElementById('frameAnalysis');
+        frameAnalysis.innerHTML = '';
+        
+        if (result.frame_analysis && result.frame_analysis.length > 0) {
+            result.frame_analysis.forEach((frame, index) => {
+                const frameElement = document.createElement('div');
+                frameElement.className = 'bg-white rounded-lg p-4 shadow-sm';
+                frameElement.innerHTML = `
+                    <h4 class="font-semibold text-gray-900 mb-2">Frame at ${frame.timestamp}s</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Confidence Score</p>
+                            <p class="text-lg font-semibold">${(frame.score * 100).toFixed(1)}%</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Faces Detected</p>
+                            <p class="text-lg font-semibold">${frame.faces_detected}</p>
+                        </div>
+                    </div>
+                `;
+                frameAnalysis.appendChild(frameElement);
+            });
+        } else {
+            frameAnalysis.innerHTML = '<p class="text-gray-500">No frame analysis available</p>';
+        }
+
+        // Show results
+        document.getElementById('results').classList.remove('hidden');
+        
+        // Smooth scroll to results
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+    } catch (error) {
+        alert('Error analyzing video: ' + error.message);
+    }
+});
+</script>
+{% endblock %}
