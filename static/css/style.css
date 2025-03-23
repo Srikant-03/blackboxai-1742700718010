@@ -1,0 +1,156 @@
+/* Base animations */
+.eye-animation {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Drop zone styles */
+.drop-zone {
+    border: 2px dashed rgba(0, 255, 136, 0.3);
+    transition: all 0.3s ease;
+}
+
+.drop-zone:hover {
+    border-color: rgba(0, 255, 136, 0.6);
+    background: rgba(0, 255, 136, 0.05);
+}
+
+.drop-zone.dragover {
+    border-color: #00ff88;
+    background: rgba(0, 255, 136, 0.1);
+}
+
+/* Scanning animation */
+.scanning-line {
+    height: 100%;
+    width: 4px;
+    background: linear-gradient(to bottom, transparent, #00ff88, transparent);
+    box-shadow: 0 0 8px #00ff88;
+    animation: scanning 2s linear infinite;
+}
+
+@keyframes scanning {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(2000%); }
+}
+
+/* Progress animation */
+.analysis-progress {
+    height: 4px;
+    background: rgba(0, 255, 136, 0.1);
+    overflow: hidden;
+    position: relative;
+}
+
+.analysis-progress::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -30%;
+    height: 100%;
+    width: 30%;
+    background: linear-gradient(90deg, transparent, #00ff88, transparent);
+    animation: progress 1.5s ease-in-out infinite;
+}
+
+@keyframes progress {
+    0% { left: -30%; }
+    100% { left: 100%; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 255, 136, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00ff88;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 136, 0.8);
+}
+
+/* Video timeline */
+#frameTimeline {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#frameTimeline div {
+    transition: height 0.3s ease;
+}
+
+#frameTimeline div:hover {
+    opacity: 1;
+}
+
+/* Frame analysis */
+.frame-analysis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.frame-thumbnail {
+    position: relative;
+    padding-top: 56.25%;
+    background: black;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.frame-thumbnail img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Face detection */
+.face-detection-box {
+    position: absolute;
+    border: 2px solid #00ff88;
+    border-radius: 4px;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.face-detection-box::before {
+    content: attr(data-confidence);
+    position: absolute;
+    top: -25px;
+    left: 0;
+    background: rgba(0, 255, 136, 0.9);
+    color: black;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* Score bar */
+#scoreBar {
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .frame-analysis {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
