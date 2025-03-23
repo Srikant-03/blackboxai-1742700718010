@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">Content Analysis Tool</h1>
+        <p class="text-xl text-gray-600">Analyze text, images, and videos for authenticity</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Text Analysis Card -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div class="p-6">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-file-alt text-2xl text-indigo-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Text Analysis</h3>
+                <p class="text-gray-600 mb-4">Analyze text content for authenticity and potential modifications.</p>
+                <a href="/text" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                    Analyze Text
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Image Analysis Card -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div class="p-6">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-image text-2xl text-green-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Image Analysis</h3>
+                <p class="text-gray-600 mb-4">Detect potential modifications and analyze image authenticity.</p>
+                <a href="/image" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                    Analyze Image
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Video Analysis Card -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div class="p-6">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-video text-2xl text-purple-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Video Analysis</h3>
+                <p class="text-gray-600 mb-4">Analyze video content for authenticity and potential manipulations.</p>
+                <a href="/video" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
+                    Analyze Video
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-16 bg-white rounded-lg shadow-md p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">How It Works</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="flex flex-col items-center text-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                    <span class="text-xl font-semibold text-blue-600">1</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Upload Content</h3>
+                <p class="text-gray-600">Choose the type of content you want to analyze and upload it to our system.</p>
+            </div>
+            <div class="flex flex-col items-center text-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                    <span class="text-xl font-semibold text-blue-600">2</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Analysis</h3>
+                <p class="text-gray-600">Our advanced algorithms analyze the content for signs of manipulation or modification.</p>
+            </div>
+            <div class="flex flex-col items-center text-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                    <span class="text-xl font-semibold text-blue-600">3</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Results</h3>
+                <p class="text-gray-600">Receive detailed analysis results with confidence scores and metadata.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
