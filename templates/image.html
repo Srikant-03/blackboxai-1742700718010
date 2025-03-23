@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Image Analysis</h1>
+        <p class="text-gray-600">Analyze images for authenticity and potential modifications</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <form id="imageForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Upload Image</label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                    <div class="space-y-1 text-center">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-image text-gray-400 text-3xl mb-3"></i>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                    <span>Upload a file</span>
+                                    <input id="image" name="image" type="file" class="sr-only" accept="image/*">
+                                </label>
+                                <p class="pl-1">or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                        </div>
+                        <img id="preview" class="mt-4 mx-auto max-h-64 hidden" />
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center">
+                <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <i class="fas fa-search mr-2"></i>
+                    Analyze Image
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div id="results" class="mt-8 hidden">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Analysis Results</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Classification Result -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Classification</h3>
+                    <p id="classification" class="text-xl font-bold"></p>
+                </div>
+                
+                <!-- Confidence Score -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Confidence Score</h3>
+                    <div class="flex items-center">
+                        <div class="flex-1 bg-gray-200 rounded-full h-4">
+                            <div id="confidenceBar" class="bg-indigo-600 rounded-full h-4" style="width: 0%"></div>
+                        </div>
+                        <span id="confidenceScore" class="ml-3 text-lg font-semibold"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Face Detection Results -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Face Detection</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Faces Detected</p>
+                        <p id="facesDetected" class="text-lg font-semibold"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Image Dimensions</p>
+                        <p id="imageDimensions" class="text-lg font-semibold"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Face Details -->
+            <div id="faceDetails" class="bg-gray-50 rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Face Analysis Details</h3>
+                <div id="faceList" class="space-y-4">
+                    <!-- Face details will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Preview image before upload
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('preview');
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+// Handle form submission
+document.getElementById('imageForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const imageFile = document.getElementById('image').files[0];
+    if (!imageFile) {
+        alert('Please select an image to analyze');
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+
+        const response = await fetch('/analyze/image', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        
+        if (result.error) {
+            throw new Error(result.error);
+        }
+
+        // Update results
+        document.getElementById('classification').textContent = result.classification;
+        document.getElementById('classification').className = 
+            result.classification === 'Likely Authentic' 
+                ? 'text-xl font-bold text-green-600' 
+                : 'text-xl font-bold text-red-600';
+
+        document.getElementById('confidenceBar').style.width = `${result.confidence}%`;
+        document.getElementById('confidenceScore').textContent = `${result.confidence.toFixed(1)}%`;
+
+        document.getElementById('facesDetected').textContent = result.metadata.faces_detected;
+        document.getElementById('imageDimensions').textContent = result.metadata.image_dimensions;
+
+        // Update face details
+        const faceList = document.getElementById('faceList');
+        faceList.innerHTML = '';
+        
+        if (result.metadata.face_details && result.metadata.face_details.length > 0) {
+            result.metadata.face_details.forEach((face, index) => {
+                const faceElement = document.createElement('div');
+                faceElement.className = 'bg-white rounded-lg p-4 shadow-sm';
+                faceElement.innerHTML = `
+                    <h4 class="font-semibold text-gray-900 mb-2">Face ${index + 1}</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Quality Score</p>
+                            <p class="text-lg font-semibold">${(face.quality_score * 100).toFixed(1)}%</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Position</p>
+                            <p class="text-sm">x: ${face.position.x}, y: ${face.position.y}</p>
+                            <p class="text-sm">w: ${face.position.width}, h: ${face.position.height}</p>
+                        </div>
+                    </div>
+                `;
+                faceList.appendChild(faceElement);
+            });
+        } else {
+            faceList.innerHTML = '<p class="text-gray-500">No face details available</p>';
+        }
+
+        // Show results
+        document.getElementById('results').classList.remove('hidden');
+        
+        // Smooth scroll to results
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+    } catch (error) {
+        alert('Error analyzing image: ' + error.message);
+    }
+});
+</script>
+{% endblock %}
